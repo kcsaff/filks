@@ -1,0 +1,4 @@
+All that is {gold/jj} does not {glitter/vb#1},
+Not all those who {wander/vb} are {lost/jj#2};
+The {old/jj} that is {strong/jj} does not {wither/vb#1},
+{Deep/jj} {roots/nns} are not {reached/vbn} by the {frost/nn#2}.

@@ -1,0 +1,4 @@
+nltk==3.2.1
+# ~~~ Just Bot Things ~~~
+tweepy==3.5.0
+inflect==0.2.5

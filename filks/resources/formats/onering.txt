@@ -1,0 +1,8 @@
+Three {Rings:3/nn=ring} for the {Elven/jj}-{kings/nns} under the {sky/nn#1},
+Seven for the {Dwarf/jj}-{lords/nns} in their {halls/nns} of {stone/nn#2},
+Nine for {Mortal/jj} {Men/nns} {doomed/vbn} to {die/vb#1},
+One for the {Dark/jj=dark} {Lord/nn} on his {dark/jj=dark} {throne/nn#2}
+In the Land of {Mordor/np=mordor} where the {Shadows/nns=shadows} {lie/vb#1=lie}.
+One {Ring:1/nn=ring} to {rule/vb} them all, One {Ring:1/nn=ring} to {find/vb#3} them,
+One {Ring:1/nn=ring} to {bring/vb} them all and in the {dark/jj=dark}ness {bind/vb#3} them
+In the Land of {Mordor/np=mordor} where the {Shadows/nns=shadows} {lie/vb#1=lie}.
