@@ -19,8 +19,8 @@ def select_format(path=None):
     if not path:
         return resource(random.choice(RESOURCE_PATHS)).strip()
     elif path.strip() == '-':
-        return sys.stdin.read()
+        return sys.stdin.read().strip()
     elif os.path.exists(path) or ('\n' not in path and '{' not in path and not '}' in path):
-        return open(path, 'r', encoding='utf-8').read()
+        return open(path, 'r', encoding='utf-8').read().strip()
     else:
-        return path  # This is the format itself
+        return path.strip()  # This is the format itself

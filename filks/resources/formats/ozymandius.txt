@@ -1,0 +1,14 @@
+I met {a traveller/nn} from {an antique/jj} {land/nn#AND}
+Who said: "Two {vast/jj} and {trunkless/jj} {legs/nns} of {stone/nn#OWN}
+{Stand/vb} in the {desert/nn}. Near them, on the {sand:1/nn#AND=sand},
+Half {sunk/vbn}, {a shattered/vbn} {visage/nn} {lies/vbz}, whose {frown/nn#OWN},
+And {wrinkled/jj} {lip/nn}, and {sneer/nn} of {cold/jj} {command/nn#AND},
+Tell that its {sculptor/nn} well those {passions/nns} {read/vbd#ED}
+Which yet survive, {stamped/vbn} on these {lifeless/jj} {things/nns#INGS}{?kings/nns#INGS=kings},
+The {hand/nn} that {mocked/vbd} them and the {heart/nn} that {fed/vbd#ED}:
+And on the {pedestal/nn} these {words/nns} {appear/vb#AIR}:
+'My name is {Ozymandias/np}, {king:1/nns=kings} of {kings/nns=kings}:
+{Look/vb} on my {works/nns}, ye {Mighty/jj}, and {despair/vb#AIR}!'
+Nothing beside remains. Round the {decay/nn#AY}
+Of that {colossal/jj} {wreck/nn}, {boundless/jj} and {bare/jj#AIR}
+The {lone/jj} and {level/jj} {sands:2/nn=sand} stretch far {away/jj#AY}."

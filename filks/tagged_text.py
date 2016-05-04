@@ -20,14 +20,30 @@ RHYME_FORMAT_REGEX = re.compile(r'\{([^\}]+\#[^\}]+)\}')
 
 
 class WordField(namedtuple('WordField', ['example', 'inflection', 'poses', 'rhyme', 'const', 'value'])):
-    def inflect(self, word):
-        if not self.example:
-            return word
-
-        if inflector and self.count is not None:
-            word = inflector.plural(word, self.count)
+    def inflect(self, word, pos):
+        if pos and inflector and self.count is not None:
+            pos_upper = pos.upper()
+            if self.count == 1:
+                if pos_upper == 'NNS':
+                    word = inflector.singular_noun(word)
+            else:
+                if pos_upper.startswith('N') and not pos_upper.endswith('S'):
+                    word = inflector.plural_noun(word)
+                elif pos_upper == 'VBZ':
+                    word = inflector.plural_verb(word)
 
         if self.example:
+            if self.example.startswith('?'):
+                return ''
+            if self.example.lower().startswith('a ') or self.example.lower().startswith('an '):
+                if inflector:
+                    word = inflector.a(word)
+                else:
+                    if word[0] in 'aeiou':
+                        word = 'an {}'.format(word)
+                    else:
+                        word = 'a {}'.format(word)
+
             if self.example == self.example.capitalize():
                 word = word.capitalize()
             elif self.example.isupper():
@@ -35,18 +51,19 @@ class WordField(namedtuple('WordField', ['example', 'inflection', 'poses', 'rhym
 
         return word
 
+    def __count(self, pos):
+        pos_upper = pos.upper()
+        if pos_upper.startswith('N'):
+            return 2 if pos_upper.endswith('S') else 1
+        if pos_upper == 'VBZ':
+            return 1
+        elif pos_upper == 'VB':
+            return 2
+        return None
+
     @property
     def count(self):
-        if self.inflection:
-            count = int(self.inflection)
-        elif inflector:
-            count = 2 if self.is_likely_plural() else 1
-        else:
-            count = None
-        return count
-
-    def is_likely_plural(self):
-        return self.example == inflector.plural(self.example) and self.example != inflector.singular_noun(self.example)
+        return int(self.inflection) if self.inflection else None
 
 
 def expand_wordfield(field, pos_fixer=lambda x: [x], valdefs={}):
@@ -126,17 +143,17 @@ class TaggedText(object):
         if self.__dictionary:
             self.__prep = dict()
             for i, (word, pos) in enumerate(self.__words):
-                syllable_count = self.__syllable_count(word)
-                rhyme = self.__dictionary.vowel_syllables(word)
-                if rhyme:
-                    rhyme = rhyme[-1]
-                    key = (pos, syllable_count)
-                    if key not in self.__prep:
-                        self.__prep[key] = dict()
-                    if rhyme not in self.__prep[key]:
-                        self.__prep[key][rhyme] = (set(), set())
-                    self.__prep[key][rhyme][0].add(i)
-                    self.__prep[key][rhyme][1].add(word.lower())
+                for syllable_count in self.__syllable_counts(word):
+                    rhyme = self.__dictionary.vowel_syllables(word)
+                    if rhyme:
+                        rhyme = rhyme[-1]
+                        key = (pos, syllable_count)
+                        if key not in self.__prep:
+                            self.__prep[key] = dict()
+                        if rhyme not in self.__prep[key]:
+                            self.__prep[key][rhyme] = (set(), set())
+                        self.__prep[key][rhyme][0].add(i)
+                        self.__prep[key][rhyme][1].add(word.lower())
         else:
             self.__prep == None
 
@@ -152,14 +169,14 @@ class TaggedText(object):
 
     def __use(self, field, location):
         self.__locations[location] += 1
-        word = self.__words[location][0]
+        word, pos = self.__words[location]
         self.__used[word.lower()] += 1
 
         if field.rhyme and field.rhyme not in self.__rhymes:
             self.__rhymes[field.rhyme] = word
         if field.const:
-            self.__defs[field.const] = word
-        return field.inflect(word)
+            self.__defs[field.const] = (word, pos)
+        return field.inflect(word, pos)
 
     def __use_count(self, location):
         return self.__locations.get(location, 0) + self.__used.get(self.__words[location][0].lower(), 0)
@@ -179,6 +196,11 @@ class TaggedText(object):
         else:
             return 0
 
+    def __syllable_counts(self, word):
+        if word and self.__dictionary:
+            yield self.__dictionary.syllable_count(word)
+        yield 0
+
     def __fix_field(self, field):
         return expand_wordfield(field, self.__fix_pos, self.__defs)
 
@@ -194,57 +216,62 @@ class TaggedText(object):
             for rhyme_name, keys in rhyme_keys.items():
                 if len(keys) <= 1:
                     continue
-                allowed_rhymes = list(
-                    set.intersection(*(
-                        set.union(*(
-                            set(self.__prep[key].keys()) for key in keylist
-                        )) for keylist in keys
-                    ))
-                )
-                random.shuffle(allowed_rhymes)
-
-                best_rhymes = None
-                best_rhymes_indices = None
-                best_rhymes_distance = float('inf')
-                for allowed_rhyme in allowed_rhymes:
-                    if len(set.union(*(
-                            itertools.chain.from_iterable(
-                                (self.__prep[key][allowed_rhyme][0] for key in keylist)
-                                for keylist in keys
-                            )
-                        ))) < len(keys):
+                for syllable_multiplier in ((1, 0) if self.__syllables else (0,)):
+                    try:
+                        allowed_rhymes = list(
+                            set.intersection(*(
+                                set.union(*(
+                                    set(self.__prep[key[0], key[1] * syllable_multiplier].keys()) for key in keylist
+                                )) for keylist in keys
+                            ))
+                        )
+                    except KeyError:
                         continue
-                    word_lowers = set()
-                    rhyming_words = list()
-                    rhyming_indices = list()
-                    distance = 0
-                    for keylist in keys:
-                        locations = set.union(*(self.__prep[key][allowed_rhyme][0] for key in keylist))
-                        for i in _iter_range_out(self.__p, len(self.__words)):
-                            if i not in locations:
-                                continue
-                            word = self.__words[i][0]
-                            word_lower = word.lower()
-                            if word_lower not in word_lowers:
-                                word_lowers.add(word_lower)
-                                rhyming_words.append(word)
-                                rhyming_indices.append(i)
-                                distance += abs(i - self.__p) + 100 * self.__use_count(i)
-                                break
+                    random.shuffle(allowed_rhymes)
+
+                    best_rhymes = None
+                    best_rhymes_indices = None
+                    best_rhymes_distance = float('inf')
+                    for allowed_rhyme in allowed_rhymes:
+                        if len(set.union(*(
+                                itertools.chain.from_iterable(
+                                    (self.__prep[key[0], key[1] * syllable_multiplier][allowed_rhyme][0] for key in keylist)
+                                    for keylist in keys
+                                )
+                            ))) < len(keys):
+                            continue
+                        word_lowers = set()
+                        rhyming_words = list()
+                        rhyming_indices = list()
+                        distance = 0
+                        for keylist in keys:
+                            locations = set.union(*(self.__prep[key[0], key[1] * syllable_multiplier][allowed_rhyme][0] for key in keylist))
+                            for i in _iter_range_out(self.__p, len(self.__words)):
+                                if i not in locations:
+                                    continue
+                                word = self.__words[i][0]
+                                word_lower = word.lower()
+                                if word_lower not in word_lowers:
+                                    word_lowers.add(word_lower)
+                                    rhyming_words.append(word)
+                                    rhyming_indices.append(i)
+                                    distance += abs(i - self.__p) + 100 * self.__use_count(i)
+                                    break
+                            else:
+                                break  # Didn't find permissible result
                         else:
-                            break  # Didn't find permissible result
-                    else:
-                        # Still ok
-                        if best_rhymes is None or distance < best_rhymes_distance:
-                            best_rhymes = rhyming_words
-                            best_rhymes_indices = rhyming_indices
-                            best_rhymes_distance = distance
-                if best_rhymes:
-                    text = re.sub(
-                        r'\{([^\}]+\#' + rhyme_name + r'(=[^\}]*)?)\}',
-                        lambda m: self.__use(self.__fix_field(m), best_rhymes_indices.pop(0)),
-                        text
-                    )
+                            # Still ok
+                            if best_rhymes is None or distance < best_rhymes_distance:
+                                best_rhymes = rhyming_words
+                                best_rhymes_indices = rhyming_indices
+                                best_rhymes_distance = distance
+                    if best_rhymes and len(best_rhymes) >= len(keys):
+                        text = re.sub(
+                            r'\{([^\}]+\#' + rhyme_name + r'(=[^\}]*)?)\}',
+                            lambda m: self.__use(self.__fix_field(m), best_rhymes_indices.pop(0)),
+                            text
+                        )
+                        break
 
         return FORMAT_REGEX.sub(self.get, text)
 
@@ -262,13 +289,13 @@ class TaggedText(object):
         if field.const:
             val = self.__defs.get(field.const, None)
             if val:
-                return field.inflect(val)
+                return field.inflect(*val)
 
         rhyming_word = self.__rhymes.get(field.rhyme)
 
         if not field.poses:
             if field.example:
-                return field.inflect(field.example)
+                return field.inflect(field.example, None)
             else:
                 raise RuntimeError('No tags {} in file! (Originally `{}`)'.format(pos, original_pos))
 
@@ -300,8 +327,5 @@ class TaggedText(object):
             else:
                 raise RuntimeError('Could not find pos `{}`'.format(pos))
 
-        self.__use(field, nextp)
         self.__p = nextp
-        word = self.__words[self.__p][0]
-
-        return field.inflect(word)
+        return self.__use(field, nextp)

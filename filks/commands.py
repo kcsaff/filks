@@ -37,7 +37,8 @@ def make_parser():
     )
     format_parser.add_argument(
         '--syllables', '-S',
-        type=bool, default=False,
+        default=False,
+        action='store_true',
         help='Match syllable counts if possible'
     )
     format_parser.add_argument(
