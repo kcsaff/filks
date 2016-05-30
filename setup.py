@@ -1,20 +1,21 @@
 import os
 from setuptools import setup, find_packages
-from pip.req import parse_requirements
-from pip.download import PipSession
 
 version = '0.1.0'
 
 def read(f):
     return open(os.path.join(os.path.dirname(__file__), f)).read().strip()
 
-install_reqs = parse_requirements('requirements.txt', session=PipSession())
-reqs = [str(ir.req) for ir in install_reqs]
+try:
+   import pypandoc
+   description = pypandoc.convert('README.md', 'rst')
+except (IOError, ImportError):
+   description = read('README.md')
 
 setup(name='filks',
       version=version,
       description=('Generates filks based on a poem format and corpus'),
-      long_description='\n\n'.join((read('README.md'), read('CHANGELOG'))),
+      long_description=description,
       classifiers=[
           'License :: OSI Approved :: MIT License',
           'Intended Audience :: Other Audience',
@@ -24,13 +25,15 @@ setup(name='filks',
       url='https://github.com/kcsaff/filks',
       license='MIT',
       packages=find_packages(),
-      install_requires=reqs,
+      install_requires=[
+          'nltk', 'tweepy', 'inflect'
+      ],
       entry_points={
           'console_scripts': ['filk = filks:main']
       },
       include_package_data = True,
-      package_data={'filks.resources.cmudict': ['*']},
-      # data_files=[
-      #     ('config', ['povray.ini'])
-      # ]
+      package_data={
+          'filks.resources.cmudict': ['*'],
+          'filks.resources.formats': ['*'],
+      },
 )

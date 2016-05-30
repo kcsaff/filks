@@ -1,5 +1,4 @@
 import argparse
-import os
 from filks.cmudict import CmuDict
 from filks.corpus import Corpus
 from filks.format_selector import select_format
@@ -17,11 +16,14 @@ def make_parser():
     parser = argparse.ArgumentParser('Filk generator')
     subparsers = parser.add_subparsers()
 
-    install_parser = subparsers.add_parser('install', help='Install required NLTK data. May require superuser privileges.')
-    install_parser.add_argument('packages', nargs='*', default=NLTK_PACKAGES, help='NLTK packages to download')
+    install_parser = subparsers.add_parser(
+        'install', help='Install required NLTK data. May require superuser privileges.')
     install_parser.set_defaults(handler=do_install)
+    install_parser.add_argument(
+        'packages', nargs='*', default=NLTK_PACKAGES, help='NLTK packages to download')
 
-    format_parser = subparsers.add_parser('format', help='Fill a filk format with words drawn from a text')
+    format_parser = subparsers.add_parser(
+        'format', help='Fill a filk format with words drawn from a text')
     format_parser.add_argument('format', nargs='?', help='Format to fill in filks')
 
     format_parser.add_argument(
@@ -63,7 +65,7 @@ def do_format(args):
 
     for i in range(args.number):
         if i:
-            print('')
+            print('')  # Just a newline
         print(corpus.random_text(dictionary, syllables=args.syllables).format(format))
 
 

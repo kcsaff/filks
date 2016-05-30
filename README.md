@@ -1,43 +1,44 @@
-Licenses
-========
+filks
+=====
 
-The software code is covered under the MIT license included in this file.
-This library also comes with included resource files covered by their own licenses:
-
- * CMU dictionary file at filks/resources/cmudict/*,
-   covered by the license at filks/resources/cmudict/LICENSE
-   or <https://github.com/cmusphinx/cmudict/blob/master/LICENSE>
+Generates silly poems based off of mad-libbed, serious poems,
+and a tagged text corpus.
 
 
-The MIT License (MIT)
-=====================
+Requirements
+============
 
-Copyright (c) 2016
+1. Python 3.3+
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Installation
+============
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+To install:
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+```
+make install
+```
 
-Additional licenses
-===================
+Development
+===========
 
-This library includes a copy of the CMU dictionary which has a
+To build the dev environment:
+
+```
+make venv
+. venv/bin/activate
+python main.py
+```
+
+LICENSING
+=========
+
+All original source code,
+including all *.py and configuration files,
+is released under the MIT license included.
+However, this library also includes a copy of the 
+CMU dictionary which has a
 BSD-style license, which we will repeat here:
-
 
 CMU License
 -----------
