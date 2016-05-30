@@ -1,6 +1,3 @@
-import os
-import urllib.request
-import urllib.parse
 import itertools
 import string
 import re
@@ -30,15 +27,12 @@ def resource(resource_name, encoding='utf-8'):
 
 
 class CmuDict(object):
-    DEFAULT_URL = 'http://svn.code.sf.net/p/cmusphinx/code/trunk/cmudict/cmudict-0.7b'
-    DEFAULT_RESOURCE = 'cmudict.txt'
     DEFAULT_ENCODING = 'latin1'
     DEFAULT_COMMENT = ';;;'
 
     def __init__(
             self,
             path=None,
-            url=DEFAULT_URL,
             encoding=DEFAULT_ENCODING,
             comment=DEFAULT_COMMENT,
     ):
@@ -53,24 +47,14 @@ class CmuDict(object):
         """
         self.path = path
 
-        # TODO: handle multiple pronunciations, etc.
-
         if not path:
-            try:
-                import nltk.corpus.cmudict
-                data = nltk.corpus.cmudict.raw()
-            except:
-                data = resource(self.DEFAULT_RESOURCE, encoding)
-        elif os.path.exists(self.path) and os.path.getsize(self.path) > 10:
+            from nltk.corpus import cmudict
+            data = cmudict.raw()
+        else:
             with open(self.path, 'r', encoding=encoding) as f:
                 data = f.read()
-        else:
-            with open(self.path, 'w', encoding=encoding) as f:
-                with urllib.request.urlopen(url) as response:
-                    data = response.read()
-                    if isinstance(data, bytes):
-                        data = data.decode(encoding)
-                f.write(data)
+
+        # TODO: handle multiple pronunciations, etc.
 
         self.__pron = dict()
         for line in data.splitlines(False):

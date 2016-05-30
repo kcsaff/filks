@@ -33,7 +33,6 @@ setup(name='filks',
       },
       include_package_data = True,
       package_data={
-          'filks.resources.cmudict': ['*'],
           'filks.resources.formats': ['*'],
       },
 )
