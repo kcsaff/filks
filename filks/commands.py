@@ -13,8 +13,9 @@ NLTK_PACKAGES = [
 
 
 def make_parser():
-    parser = argparse.ArgumentParser('Filk generator')
-    subparsers = parser.add_subparsers()
+    parser = argparse.ArgumentParser(description='Filk generator')
+    subparsers = parser.add_subparsers(dest='command')
+    subparsers.required = True
 
     install_parser = subparsers.add_parser(
         'install', help='Install required NLTK data. May require superuser privileges.')
